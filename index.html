@@ -168,7 +168,7 @@
     <div id="appContainer" class="hidden flex-1 flex flex-col max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         <!-- NAVIGATION TABS -->
-        <nav class="flex flex-wrap gap-2 mb-6 bg-brandMain p-2 rounded-2xl shadow-lg border border-yellow-600/30">
+        <nav class="flex flex-wrap gap-2 mb-6 bg-brandMain p-2 rounded-2xl shadow-lg border border-yellow-600/30 items-center">
             <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn flex-1 min-w-[140px] py-3 px-4 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-brandBg text-brandMain shadow">
                 <i class="fa-solid fa-chart-pie"></i>
                 <span>1. Dashboard</span>
@@ -182,9 +182,14 @@
                 <span>3. Donated Books</span>
             </button>
             <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn flex-1 min-w-[140px] py-3 px-4 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 text-gray-300 hover:text-white hover:bg-brandHover">
-                <i class="fa-solid fa-users"></i>
+                <i class="fa-solid fa-id-card"></i>
                 <span>4. Issued & Members</span>
             </button>
+            <div class="ml-auto flex items-center space-x-2 pl-2">
+                <button onclick="exportFullSystemBackupCSV()" class="text-xs px-3 py-2 bg-emerald-800 hover:bg-emerald-700 text-emerald-100 font-bold rounded-xl border border-emerald-500/30 transition whitespace-nowrap shadow-sm" title="Export full backup as CSV">
+                    <i class="fa-solid fa-file-excel mr-1"></i>Backup All (CSV)
+                </button>
+            </div>
         </nav>
 
         <!-- PAGE CONTENT PANELS -->
@@ -257,7 +262,7 @@
                             </div>
                         </div>
                         <p class="text-xs text-gray-700 leading-relaxed mb-6 font-normal">
-                            Log official book numbers, voucher details, and art department classifications (Painting, Sculpture, Applied Art, History of Art, etc.), or preserve donor archives.
+                            Enter standard library register details including book number, purchase invoice/voucher details, section categorization, or log donated books with donor credentials.
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-3">
@@ -340,6 +345,9 @@
                                 class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 pl-10 text-xs focus:ring-2 focus:ring-brandMain focus:outline-none shadow-sm font-medium">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-gray-400 text-xs"></i>
                         </div>
+                        <button onclick="exportPurchaseLedgerCSV()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
                         <button onclick="openAddBookModal('purchased')" class="bg-brandMain hover:bg-brandHover text-brandBg font-bold px-4 py-2 rounded-xl text-xs shadow flex items-center gap-2 shrink-0">
                             <i class="fa-solid fa-plus"></i> Add New Book
                         </button>
@@ -391,6 +399,9 @@
                                 class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 pl-10 text-xs focus:ring-2 focus:ring-brandMain focus:outline-none shadow-sm font-medium">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-gray-400 text-xs"></i>
                         </div>
+                        <button onclick="exportDonationLedgerCSV()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
                         <button onclick="openAddBookModal('donated')" class="bg-brandMain hover:bg-brandHover text-brandBg font-bold px-4 py-2 rounded-xl text-xs shadow flex items-center gap-2 shrink-0">
                             <i class="fa-solid fa-plus"></i> Add Donated Book
                         </button>
@@ -434,13 +445,19 @@
                         <p class="text-xs text-gray-600">Classified student and faculty profiles with active loan tracking and return actions</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                        <div class="relative flex-1 md:w-64">
+                        <div class="relative flex-1 md:w-56">
                             <input type="text" id="searchMembersInput" oninput="renderMembersList()" placeholder="Search member name or ID..."
                                 class="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 pl-10 text-xs focus:ring-2 focus:ring-brandMain focus:outline-none shadow-sm font-medium">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-gray-400 text-xs"></i>
                         </div>
+                        <button onclick="exportMembersCSV()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs shadow flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-file-csv"></i> Members
+                        </button>
+                        <button onclick="exportIssuedBooksCSV()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs shadow flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-file-excel"></i> Active Dues
+                        </button>
                         <button onclick="openAddMemberModal()" class="bg-brandMain hover:bg-brandHover text-brandBg font-bold px-4 py-2 rounded-xl text-xs shadow flex items-center gap-2 shrink-0">
-                            <i class="fa-solid fa-user-plus"></i> Add New Member
+                            <i class="fa-solid fa-user-plus"></i> Add Member
                         </button>
                     </div>
                 </div>
@@ -1170,53 +1187,165 @@
                                 <div class="flex items-center gap-2 mt-0.5">
                                     <span class="text-xs font-semibold text-gray-500">ID: ${escapeHtml(m.id)}</span>
                                     <span class="text-gray-300">•</span>
-                                    <span class="text-xs font-medium text-gray-600">${escapeHtml(m.department)} Dept</span>
+                                    <span class="text-xs font-medium text-gray-600">${escapeHtml(m.department)}</span>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold ${m.type === 'Faculty' ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${m.type === 'Faculty' ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
                                 ${m.type}
                             </span>
-                            <button onclick="openIssueBookModal('${m.id}')" class="bg-brandMain hover:bg-brandHover text-brandBg font-bold px-3 py-1.5 rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                            <button onclick="openIssueBookModal('${m.id}')" class="px-3 py-1.5 bg-brandMain hover:bg-brandHover text-brandBg font-bold rounded-xl text-xs transition shadow flex items-center gap-1.5">
                                 <i class="fa-solid fa-plus"></i> Issue Book
                             </button>
-                            <button onclick="deleteMember('${m.id}')" class="text-gray-400 hover:text-red-600 p-1.5 text-sm transition" title="Delete Member">
+                            <button onclick="deleteMember('${m.id}')" class="p-1.5 bg-red-100 hover:bg-red-200 text-red-800 rounded-xl text-xs transition" title="Delete Member Profile">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
                     </div>
-
                     <div>
-                        <div class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1 flex items-center justify-between">
-                            <span>Currently Borrowed Books (${activeLoans.length})</span>
-                        </div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Currently Borrowed Books (${activeLoans.length})</h4>
                         ${loanRows}
                     </div>
                 `;
-
                 container.appendChild(card);
             });
         }
 
-        // BOOK MODAL HANDLERS
-        function openAddBookModal(type) {
-            document.getElementById('bookForm').reset();
-            document.getElementById('bookModalEditIndex').value = '-1';
-            document.getElementById('bookModalType').value = type;
+        /* ==========================================================================
+           MODAL HELPERS & UTILS
+           ========================================================================== */
+        function downloadCSV(filename, csvContent) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
 
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('bmEntryDate').value = today;
+        function escapeCSVField(field) {
+            if (field === null || field === undefined) return '""';
+            const stringValue = String(field).replace(/"/g, '""');
+            return `"${stringValue}"`;
+        }
+
+        /* ==========================================================================
+           EXPORT CSV / EXCEL BACKUP FUNCTIONS
+           ========================================================================== */
+        function exportPurchaseLedgerCSV() {
+            if (!booksData || booksData.length === 0) {
+                alert("No purchase ledger entries to export!");
+                return;
+            }
+            const headers = [
+                "Sl. No", "Book No", "Date of Entry", "Book Name / Title", "Author / Editor", 
+                "Publisher", "Pub Date", "Edition", "ISBN", "Purchased From", "Voucher No & Date", "Price (INR)", "Class / Section"
+            ];
+            const rows = booksData.map((b, idx) => [
+                idx + 1, b.bookNo, b.entryDate, b.title, b.author, 
+                b.publisher || '', b.pubDate || '', b.edition || '', b.isbn || '', 
+                b.purchasedFrom || '', b.voucher || '', b.price || '0.00', b.section
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Purchase_Ledger_Backup_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportDonationLedgerCSV() {
+            if (!giftedData || giftedData.length === 0) {
+                alert("No donation register entries to export!");
+                return;
+            }
+            const headers = [
+                "Sl. No", "Book No", "Date of Entry", "Book Name / Title", "Author / Editor", 
+                "Publisher", "Edition", "ISBN", "Donated By (Donor)", "Class / Section"
+            ];
+            const rows = giftedData.map((g, idx) => [
+                idx + 1, g.bookNo, g.entryDate, g.title, g.author, 
+                g.publisher || '', g.edition || '', g.isbn || '', g.donor || '', g.section
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Gift_Ledger_Backup_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportMembersCSV() {
+            if (!membersData || membersData.length === 0) {
+                alert("No members registered to export!");
+                return;
+            }
+            const headers = ["Member ID", "Full Name", "Category / Type", "Department", "Contact Phone", "Active Issued Books Count"];
+            const rows = membersData.map(m => [
+                m.id, m.name, m.type, m.department, m.phone || '', (m.issuedBooks || []).length
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Members_Directory_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportIssuedBooksCSV() {
+            const activeLoans = [];
+            membersData.forEach(m => {
+                (m.issuedBooks || []).forEach(b => {
+                    activeLoans.push({
+                        memberId: m.id,
+                        memberName: m.name,
+                        memberType: m.type,
+                        bookNo: b.bookNo,
+                        title: b.title,
+                        author: b.author,
+                        issueDate: b.issueDate,
+                        dueDate: b.dueDate
+                    });
+                });
+            });
+
+            if (activeLoans.length === 0) {
+                alert("No active book loans to export!");
+                return;
+            }
+
+            const headers = ["Member ID", "Member Name", "Member Type", "Book No", "Book Title", "Author", "Issue Date", "Due Date"];
+            const rows = activeLoans.map(l => [
+                l.memberId, l.memberName, l.memberType, l.bookNo, l.title, l.author, l.issueDate, l.dueDate
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Active_Book_Loans_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportFullSystemBackupCSV() {
+            exportPurchaseLedgerCSV();
+            setTimeout(exportDonationLedgerCSV, 300);
+            setTimeout(exportMembersCSV, 600);
+            setTimeout(exportIssuedBooksCSV, 900);
+        }
+
+        /* ==========================================================================
+           BOOK CRUD OPERATIONS & MODALS
+           ========================================================================== */
+        function openAddBookModal(type) {
+            document.getElementById('bookModalType').value = type;
+            document.getElementById('bookModalEditIndex').value = "-1";
+            document.getElementById('bookForm').reset();
+            document.getElementById('bmEntryDate').value = new Date().toISOString().slice(0, 10);
 
             if (type === 'purchased') {
-                document.getElementById('bookModalTitle').innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add New Purchase Entry';
+                document.getElementById('bookModalTitle').innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add Purchased Book Record';
                 document.getElementById('purchasedSpecificFields').classList.remove('hidden');
                 document.getElementById('donatedSpecificFields').classList.add('hidden');
+                document.getElementById('bmDonor').removeAttribute('required');
             } else {
-                document.getElementById('bookModalTitle').innerHTML = '<i class="fa-solid fa-hand-holding-heart"></i> Add Donated Book Entry';
+                document.getElementById('bookModalTitle').innerHTML = '<i class="fa-solid fa-hand-holding-heart"></i> Add Donated Book Record';
                 document.getElementById('purchasedSpecificFields').classList.add('hidden');
                 document.getElementById('donatedSpecificFields').classList.remove('hidden');
+                document.getElementById('bmDonor').setAttribute('required', 'true');
             }
 
             document.getElementById('bookModal').classList.remove('hidden');
@@ -1226,107 +1355,74 @@
             document.getElementById('bookModal').classList.add('hidden');
         }
 
+        function editBookEntry(type, bookNo) {
+            let list = type === 'purchased' ? booksData : giftedData;
+            const index = list.findIndex(b => b.bookNo === bookNo);
+            if (index === -1) return;
+
+            const b = list[index];
+            openAddBookModal(type);
+            document.getElementById('bookModalEditIndex').value = index;
+
+            document.getElementById('bmBookNo').value = b.bookNo;
+            document.getElementById('bmEntryDate').value = b.entryDate;
+            document.getElementById('bmSection').value = b.section || 'Painting';
+            document.getElementById('bmTitle').value = b.title;
+            document.getElementById('bmAuthor').value = b.author;
+            document.getElementById('bmPublisher').value = b.publisher || '';
+            document.getElementById('bmEdition').value = b.edition || '';
+            document.getElementById('bmIsbn').value = b.isbn || '';
+
+            if (type === 'purchased') {
+                document.getElementById('bmPubDate').value = b.pubDate || '';
+                document.getElementById('bmPurchasedFrom').value = b.purchasedFrom || '';
+                document.getElementById('bmPrice').value = b.price || '';
+                document.getElementById('bmVoucher').value = b.voucher || '';
+            } else {
+                document.getElementById('bmDonor').value = b.donor || '';
+            }
+        }
+
         function saveBookEntry(event) {
             event.preventDefault();
             const type = document.getElementById('bookModalType').value;
-            const bookNo = document.getElementById('bmBookNo').value.trim();
+            const editIndex = parseInt(document.getElementById('bookModalEditIndex').value);
 
-            const entry = {
-                bookNo: bookNo,
+            const bookObj = {
+                bookNo: document.getElementById('bmBookNo').value.trim(),
                 entryDate: document.getElementById('bmEntryDate').value,
                 section: document.getElementById('bmSection').value,
                 title: document.getElementById('bmTitle').value.trim(),
                 author: document.getElementById('bmAuthor').value.trim(),
                 publisher: document.getElementById('bmPublisher').value.trim(),
                 edition: document.getElementById('bmEdition').value.trim(),
-                isbn: document.getElementById('bmIsbn').value.trim(),
+                isbn: document.getElementById('bmIsbn').value.trim()
             };
 
             if (type === 'purchased') {
-                entry.pubDate = document.getElementById('bmPubDate').value.trim();
-                entry.purchasedFrom = document.getElementById('bmPurchasedFrom').value.trim();
-                entry.price = document.getElementById('bmPrice').value.trim() || '0.00';
-                entry.voucher = document.getElementById('bmVoucher').value.trim();
+                bookObj.pubDate = document.getElementById('bmPubDate').value.trim();
+                bookObj.purchasedFrom = document.getElementById('bmPurchasedFrom').value.trim();
+                bookObj.price = document.getElementById('bmPrice').value || '0.00';
+                bookObj.voucher = document.getElementById('bmVoucher').value.trim();
 
-                const existingIndex = booksData.findIndex(b => b.bookNo === bookNo);
-                const editIdx = parseInt(document.getElementById('bookModalEditIndex').value);
-
-                if (editIdx === -1 && existingIndex !== -1) {
-                    alert('A book with this Book Number already exists in the Purchase Register!');
-                    return;
-                }
-
-                if (editIdx !== -1) {
-                    booksData[editIdx] = entry;
-                } else {
-                    booksData.push(entry);
-                }
+                if (editIndex >= 0) booksData[editIndex] = bookObj;
+                else booksData.push(bookObj);
             } else {
-                entry.donor = document.getElementById('bmDonor').value.trim();
-                
-                const existingIndex = giftedData.findIndex(g => g.bookNo === bookNo);
-                const editIdx = parseInt(document.getElementById('bookModalEditIndex').value);
+                bookObj.donor = document.getElementById('bmDonor').value.trim();
 
-                if (editIdx === -1 && existingIndex !== -1) {
-                    alert('A book with this Book Number already exists in the Donated Register!');
-                    return;
-                }
-
-                if (editIdx !== -1) {
-                    giftedData[editIdx] = entry;
-                } else {
-                    giftedData.push(entry);
-                }
+                if (editIndex >= 0) giftedData[editIndex] = bookObj;
+                else giftedData.push(bookObj);
             }
 
             saveToStorage();
             closeBookModal();
-            renderBooksRegister();
-            renderDonatedRegister();
+            if (type === 'purchased') renderBooksRegister();
+            else renderDonatedRegister();
             renderDashboard();
         }
 
-        function editBookEntry(type, bookNo) {
-            if (type === 'purchased') {
-                const idx = booksData.findIndex(b => b.bookNo === bookNo);
-                if (idx === -1) return;
-                const b = booksData[idx];
-
-                openAddBookModal('purchased');
-                document.getElementById('bookModalEditIndex').value = idx;
-                document.getElementById('bmBookNo').value = b.bookNo;
-                document.getElementById('bmEntryDate').value = b.entryDate;
-                document.getElementById('bmSection').value = b.section;
-                document.getElementById('bmTitle').value = b.title;
-                document.getElementById('bmAuthor').value = b.author;
-                document.getElementById('bmPublisher').value = b.publisher || '';
-                document.getElementById('bmEdition').value = b.edition || '';
-                document.getElementById('bmIsbn').value = b.isbn || '';
-                document.getElementById('bmPubDate').value = b.pubDate || '';
-                document.getElementById('bmPurchasedFrom').value = b.purchasedFrom || '';
-                document.getElementById('bmPrice').value = b.price || '';
-                document.getElementById('bmVoucher').value = b.voucher || '';
-            } else {
-                const idx = giftedData.findIndex(g => g.bookNo === bookNo);
-                if (idx === -1) return;
-                const g = giftedData[idx];
-
-                openAddBookModal('donated');
-                document.getElementById('bookModalEditIndex').value = idx;
-                document.getElementById('bmBookNo').value = g.bookNo;
-                document.getElementById('bmEntryDate').value = g.entryDate;
-                document.getElementById('bmSection').value = g.section;
-                document.getElementById('bmTitle').value = g.title;
-                document.getElementById('bmAuthor').value = g.author;
-                document.getElementById('bmPublisher').value = g.publisher || '';
-                document.getElementById('bmEdition').value = g.edition || '';
-                document.getElementById('bmIsbn').value = g.isbn || '';
-                document.getElementById('bmDonor').value = g.donor || '';
-            }
-        }
-
         function deleteBookEntry(type, bookNo) {
-            if (!confirm(`Are you sure you want to delete book "${bookNo}"?`)) return;
+            if (!confirm(`Are you sure you want to delete book entry "${bookNo}"?`)) return;
 
             if (type === 'purchased') {
                 booksData = booksData.filter(b => b.bookNo !== bookNo);
@@ -1335,12 +1431,14 @@
             }
 
             saveToStorage();
-            renderBooksRegister();
-            renderDonatedRegister();
+            if (type === 'purchased') renderBooksRegister();
+            else renderDonatedRegister();
             renderDashboard();
         }
 
-        // MEMBER MODAL HANDLERS
+        /* ==========================================================================
+           MEMBER & ISSUE OPERATIONS
+           ========================================================================== */
         function openAddMemberModal() {
             document.getElementById('memberForm').reset();
             document.getElementById('memberModal').classList.remove('hidden');
@@ -1352,15 +1450,8 @@
 
         function saveMemberEntry(event) {
             event.preventDefault();
-            const id = document.getElementById('mmId').value.trim();
-
-            if (membersData.some(m => m.id === id)) {
-                alert('A member with this Roll / Employee ID already exists!');
-                return;
-            }
-
-            const newMember = {
-                id: id,
+            const memberObj = {
+                id: document.getElementById('mmId').value.trim(),
                 name: document.getElementById('mmName').value.trim(),
                 type: document.getElementById('mmType').value,
                 department: document.getElementById('mmDepartment').value,
@@ -1368,7 +1459,13 @@
                 issuedBooks: []
             };
 
-            membersData.push(newMember);
+            const existingIndex = membersData.findIndex(m => m.id === memberObj.id);
+            if (existingIndex >= 0) {
+                alert("A member with this ID already exists!");
+                return;
+            }
+
+            membersData.push(memberObj);
             saveToStorage();
             closeMemberModal();
             renderMembersList();
@@ -1376,35 +1473,27 @@
         }
 
         function deleteMember(memberId) {
-            const member = membersData.find(m => m.id === memberId);
-            if (member && member.issuedBooks && member.issuedBooks.length > 0) {
-                alert('Cannot delete a member with active book loans! Please return all books first.');
-                return;
-            }
-
-            if (!confirm('Are you sure you want to remove this member profile?')) return;
-
+            if (!confirm(`Are you sure you want to delete member profile "${memberId}"?`)) return;
             membersData = membersData.filter(m => m.id !== memberId);
             saveToStorage();
             renderMembersList();
             renderDashboard();
         }
 
-        // BOOK ISSUE AND RETURN HANDLERS
         function openIssueBookModal(memberId) {
             const member = membersData.find(m => m.id === memberId);
             if (!member) return;
 
             document.getElementById('issueForm').reset();
             document.getElementById('imMemberId').value = member.id;
-            document.getElementById('imMemberName').value = `${member.name} (${member.type})`;
-
+            document.getElementById('imMemberName').value = `${member.name} (${member.id})`;
+            
             const today = new Date();
             const dueDate = new Date();
-            dueDate.setDate(today.getDate() + 14); // 14 days default loan
+            dueDate.setDate(today.getDate() + 14);
 
-            document.getElementById('imIssueDate').value = today.toISOString().split('T')[0];
-            document.getElementById('imDueDate').value = dueDate.toISOString().split('T')[0];
+            document.getElementById('imIssueDate').value = today.toISOString().slice(0, 10);
+            document.getElementById('imDueDate').value = dueDate.toISOString().slice(0, 10);
 
             document.getElementById('issueBookModal').classList.remove('hidden');
         }
@@ -1414,26 +1503,21 @@
         }
 
         function lookupBookDetails() {
-            const queryNo = document.getElementById('imBookNo').value.trim().toLowerCase();
+            const bookNo = document.getElementById('imBookNo').value.trim();
             const titleInput = document.getElementById('imTitle');
             const authorInput = document.getElementById('imAuthor');
 
-            if (!queryNo) {
-                titleInput.value = '';
-                authorInput.value = '';
-                return;
+            let found = booksData.find(b => b.bookNo.toLowerCase() === bookNo.toLowerCase());
+            if (!found) {
+                found = giftedData.find(g => g.bookNo.toLowerCase() === bookNo.toLowerCase());
             }
 
-            // Search purchased books first, then gifted books
-            const match = booksData.find(b => b.bookNo.toLowerCase() === queryNo) ||
-                          giftedData.find(g => g.bookNo.toLowerCase() === queryNo);
-
-            if (match) {
-                titleInput.value = match.title;
-                authorInput.value = match.author;
+            if (found) {
+                titleInput.value = found.title;
+                authorInput.value = found.author;
             } else {
-                titleInput.value = 'Book not found in database';
-                authorInput.value = '-';
+                titleInput.value = '';
+                authorInput.value = '';
             }
         }
 
@@ -1446,56 +1530,36 @@
             const issueDate = document.getElementById('imIssueDate').value;
             const dueDate = document.getElementById('imDueDate').value;
 
-            if (title === 'Book not found in database' || !title) {
-                alert('Please enter a valid registered Book Number!');
+            if (!title) {
+                alert("Please enter a valid, registered Book Number.");
                 return;
             }
 
-            // Check if book is already issued to anyone
-            let isAlreadyIssued = false;
-            membersData.forEach(m => {
-                if (m.issuedBooks && m.issuedBooks.some(b => b.bookNo.toLowerCase() === bookNo.toLowerCase())) {
-                    isAlreadyIssued = true;
-                }
-            });
+            const member = membersData.find(m => m.id === memberId);
+            if (!member) return;
 
-            if (isAlreadyIssued) {
-                alert('This book is currently issued to another member! Return it before issuing again.');
-                return;
-            }
+            if (!member.issuedBooks) member.issuedBooks = [];
+            member.issuedBooks.push({ bookNo, title, author, issueDate, dueDate });
 
-            const memberIndex = membersData.findIndex(m => m.id === memberId);
-            if (memberIndex !== -1) {
-                if (!membersData[memberIndex].issuedBooks) membersData[memberIndex].issuedBooks = [];
-                
-                membersData[memberIndex].issuedBooks.push({
-                    bookNo: bookNo,
-                    title: title,
-                    author: author,
-                    issueDate: issueDate,
-                    dueDate: dueDate
-                });
-
-                saveToStorage();
-                closeIssueBookModal();
-                renderMembersList();
-                renderDashboard();
-            }
+            saveToStorage();
+            closeIssueBookModal();
+            renderMembersList();
+            renderDashboard();
         }
 
         function returnBook(memberId, bookNo) {
-            if (!confirm(`Confirm return of book "${bookNo}"?`)) return;
+            const member = membersData.find(m => m.id === memberId);
+            if (!member) return;
 
-            const memberIndex = membersData.findIndex(m => m.id === memberId);
-            if (memberIndex !== -1) {
-                membersData[memberIndex].issuedBooks = membersData[memberIndex].issuedBooks.filter(b => b.bookNo !== bookNo);
-                saveToStorage();
-                renderMembersList();
-                renderDashboard();
-            }
+            member.issuedBooks = (member.issuedBooks || []).filter(b => b.bookNo !== bookNo);
+            saveToStorage();
+            renderMembersList();
+            renderDashboard();
         }
 
-        // ADMIN MANAGEMENT & PASSWORD CHANGE MODALS
+        /* ==========================================================================
+           ADMIN & PASSWORD MANAGEMENT MODALS
+           ========================================================================== */
         function openChangePasswordModal() {
             document.getElementById('changePasswordForm').reset();
             document.getElementById('pwErrorMsg').classList.add('hidden');
@@ -1508,36 +1572,29 @@
 
         function savePasswordChange(event) {
             event.preventDefault();
-            const curr = document.getElementById('pwCurrent').value;
+            const currentPw = document.getElementById('pwCurrent').value;
             const newPw = document.getElementById('pwNew').value;
             const confirmPw = document.getElementById('pwConfirm').value;
-            const errBox = document.getElementById('pwErrorMsg');
+            const errorMsg = document.getElementById('pwErrorMsg');
 
-            if (curr !== activeAdmin.password) {
-                errBox.innerText = 'Current password typed is incorrect!';
-                errBox.classList.remove('hidden');
+            if (currentPw !== activeAdmin.password) {
+                errorMsg.innerText = "Current password does not match!";
+                errorMsg.classList.remove('hidden');
                 return;
             }
 
             if (newPw !== confirmPw) {
-                errBox.innerText = 'New password and confirmation do not match!';
-                errBox.classList.remove('hidden');
+                errorMsg.innerText = "New passwords do not match!";
+                errorMsg.classList.remove('hidden');
                 return;
             }
 
-            if (newPw.length < 4) {
-                errBox.innerText = 'Password must be at least 4 characters long.';
-                errBox.classList.remove('hidden');
-                return;
-            }
-
-            // Update in state and storage
-            const idx = adminsData.findIndex(a => a.id === activeAdmin.id);
-            if (idx !== -1) {
-                adminsData[idx].password = newPw;
+            const adminObj = adminsData.find(a => a.id === activeAdmin.id);
+            if (adminObj) {
+                adminObj.password = newPw;
                 activeAdmin.password = newPw;
                 saveToStorage();
-                alert('Password updated successfully!');
+                alert("Password updated successfully!");
                 closeChangePasswordModal();
             }
         }
@@ -1552,43 +1609,39 @@
         }
 
         function renderAdminsList() {
-            const list = document.getElementById('adminAccountsList');
-            list.innerHTML = '';
+            const listContainer = document.getElementById('adminAccountsList');
+            listContainer.innerHTML = '';
 
-            adminsData.forEach(admin => {
-                const item = document.createElement('div');
-                item.className = "flex items-center justify-between p-2.5 bg-white border border-gray-200 rounded-xl text-xs";
-                item.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-user-shield text-brandMain"></i>
-                        <span class="font-bold text-gray-800">${escapeHtml(admin.username)}</span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-bold border border-yellow-300">${admin.role}</span>
+            adminsData.forEach(a => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center p-2.5 bg-white border border-gray-200 rounded-xl text-xs";
+                div.innerHTML = `
+                    <div>
+                        <strong class="text-brandMain">${escapeHtml(a.username)}</strong>
+                        <span class="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${a.role === 'Main Admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-gray-100 text-gray-700'}">${a.role}</span>
                     </div>
-                    ${admin.role !== 'Main Admin' ? `
-                        <button onclick="removeSubAdmin('${admin.id}')" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 bg-red-50 rounded-lg transition">
-                            Remove
+                    ${a.role !== 'Main Admin' ? `
+                        <button onclick="removeSubAdmin('${a.id}')" class="text-red-600 hover:text-red-800 text-xs font-bold">
+                            <i class="fa-solid fa-trash-can"></i> Remove
                         </button>
-                    ` : '<span class="text-[10px] text-gray-400 font-medium">Protected</span>'}
+                    ` : '<span class="text-[10px] text-gray-400 font-bold">Primary</span>'}
                 `;
-                list.appendChild(item);
+                listContainer.appendChild(div);
             });
         }
 
         function addNewSubAdmin(event) {
             event.preventDefault();
-            const user = document.getElementById('newAdminUser').value.trim();
-            const pass = document.getElementById('newAdminPass').value.trim();
+            const username = document.getElementById('newAdminUser').value.trim();
+            const password = document.getElementById('newAdminPass').value.trim();
 
-            if (adminsData.some(a => a.username.toLowerCase() === user.toLowerCase())) {
-                alert('An admin account with this username already exists!');
-                return;
-            }
+            if (!username || !password) return;
 
             const newAdmin = {
-                id: Date.now().toString(),
-                username: user,
+                id: String(Date.now()),
+                username: username,
                 role: 'Sub Admin',
-                password: pass
+                password: password
             };
 
             adminsData.push(newAdmin);
@@ -1598,23 +1651,22 @@
             populateAdminDropdown();
         }
 
-        function removeSubAdmin(id) {
-            if (!confirm('Are you sure you want to remove this secondary admin account?')) return;
-            adminsData = adminsData.filter(a => a.id !== id);
+        function removeSubAdmin(adminId) {
+            if (!confirm("Remove this secondary admin account?")) return;
+            adminsData = adminsData.filter(a => a.id !== adminId);
             saveToStorage();
             renderAdminsList();
             populateAdminDropdown();
         }
 
-        // UTILITY SANITIZATION
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
     </script>
 </body>
