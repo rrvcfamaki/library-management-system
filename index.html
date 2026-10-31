@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System - Raja Ravi Varma College of Fine Arts</title>
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Free 6 Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        slateDark: '#1E222A',
+                        slateCard: '#FFFFFF',
+                        slateBorder: '#E2E8F0',
+                        amberAccent: '#D97706',
+                        amberHover: '#B45309'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background-color: #1E222A;
+            color: #0F172A;
+        }
+        .modal-backdrop {
+            background-color: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94A3B8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748B;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-white font-light text-sm">
+
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay" class="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 p-8 text-slate-800 relative overflow-hidden">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3 shadow-md shadow-amber-500/30">
+                    <i class="fa-solid fa-palette"></i>
+                </div>
+                <h2 class="text-xl font-normal text-slate-800 tracking-tight">Library Portal Sign In</h2>
+                <p class="text-xs text-slate-500 mt-1 font-light">Raja Ravi Varma College of Fine Arts, Mavelikara</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-normal text-slate-600 mb-1">Select Administrator</label>
+                    <div class="relative">
+                        <select id="loginAdminSelect" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 pl-9 text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none font-light text-xs">
+                            <!-- JS Populated -->
+                        </select>
+                        <i class="fa-solid fa-user-shield absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-normal text-slate-600 mb-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" placeholder="Enter security password" required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 pl-9 text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none font-light text-xs">
+                        <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <div id="loginErrorMsg" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-xl flex items-center gap-2 font-light">
+                    <i class="fa-solid fa-circle-exclamation text-sm"></i>
+                    <span>Invalid password. Please try again.</span>
+                </div>
+
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-normal py-3 px-4 rounded-xl shadow transition duration-200 flex items-center justify-center gap-2 text-xs tracking-wide">
+                    <span>Authenticate & Access</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-[11px] text-slate-400 border-t border-slate-100 pt-3.5 font-light">
+                Institutional Access • Mavelikara, Alappuzha, Kerala
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="appContainer" class="hidden flex-1 flex flex-col max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        
+        <!-- HEADER BAR -->
+        <header class="bg-slate-900 text-white rounded-2xl shadow-lg border border-slate-800 mb-5 p-4 sm:p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3.5 text-center md:text-left">
+                <div class="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow-sm shrink-0">
+                    <i class="fa-solid fa-palette"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-normal tracking-tight text-white leading-tight">
+                        Raja Ravi Varma College of Fine Arts
+                    </h1>
+                    <p class="text-xs text-amber-400/90 font-light tracking-wide">
+                        Central Library Management System • Mavelikara
+                    </p>
+                </div>
+            </div>
+
+            <!-- User Status & Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2.5 justify-center md:justify-end">
+                <span id="currentUserBadge" class="bg-slate-800 text-amber-300 text-xs font-normal px-3 py-1.5 rounded-xl border border-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-check text-[11px]"></i>
+                    <span id="currentUserName">Main Admin</span>
+                </span>
+                <button onclick="openManageAdminsModal()" id="btnManageAdmins" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl transition text-xs font-light flex items-center gap-1.5">
+                    <i class="fa-solid fa-users-gear text-slate-400"></i> Admins
+                </button>
+                <button onclick="openChangePasswordModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl transition text-xs font-light flex items-center gap-1.5">
+                    <i class="fa-solid fa-key text-slate-400"></i> Change Password
+                </button>
+                <button onclick="exportFullSystemBackupCSV()" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-1.5 rounded-xl transition text-xs font-normal flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-download"></i> Backup All (CSV)
+                </button>
+                <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-xl transition text-xs font-light flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- NAVIGATION TABS -->
+        <nav class="flex flex-wrap gap-2 mb-5 bg-slate-900 p-1.5 rounded-2xl shadow border border-slate-800 items-center">
+            <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn flex-1 min-w-[140px] py-2.5 px-3.5 rounded-xl font-normal text-xs transition flex items-center justify-center gap-2 bg-amber-500 text-white shadow-sm">
+                <i class="fa-solid fa-chart-pie text-xs"></i>
+                <span>1. Dashboard</span>
+            </button>
+            <button onclick="switchTab(2)" id="tab-btn-2" class="tab-btn flex-1 min-w-[140px] py-2.5 px-3.5 rounded-xl font-light text-xs transition flex items-center justify-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-book-bookmark text-xs"></i>
+                <span>2. Books Register</span>
+            </button>
+            <button onclick="switchTab(3)" id="tab-btn-3" class="tab-btn flex-1 min-w-[140px] py-2.5 px-3.5 rounded-xl font-light text-xs transition flex items-center justify-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-gift text-xs"></i>
+                <span>3. Donated Books</span>
+            </button>
+            <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn flex-1 min-w-[140px] py-2.5 px-3.5 rounded-xl font-light text-xs transition flex items-center justify-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-users text-xs"></i>
+                <span>4. Issued & Members</span>
+            </button>
+        </nav>
+
+        <!-- PAGE CONTENT PANELS -->
+
+        <!-- PAGE 1: DASHBOARD -->
+        <section id="page-1" class="page-panel space-y-5">
+            <!-- COUNTER CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-normal text-slate-500 uppercase tracking-wider">Total Books</p>
+                        <h3 id="dashTotalBooks" class="text-2xl font-semibold text-slate-800 mt-1">0</h3>
+                        <p class="text-[11px] font-light text-slate-400 mt-0.5">Purchased & Donated</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-normal text-slate-500 uppercase tracking-wider">Gifted / Donated</p>
+                        <h3 id="dashTotalDonated" class="text-2xl font-semibold text-slate-800 mt-1">0</h3>
+                        <p class="text-[11px] font-light text-slate-400 mt-0.5">Special Donated Archives</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-normal text-slate-500 uppercase tracking-wider">Active Loans</p>
+                        <h3 id="dashActiveLoans" class="text-2xl font-semibold text-slate-800 mt-1">0</h3>
+                        <p class="text-[11px] font-light text-slate-400 mt-0.5">Currently Borrowed</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-normal text-slate-500 uppercase tracking-wider">Members</p>
+                        <h3 id="dashTotalMembers" class="text-2xl font-semibold text-slate-800 mt-1">0</h3>
+                        <p class="text-[11px] font-light text-slate-400 mt-0.5">Student & Staff Profiles</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK ACTION PANELS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-normal text-slate-800">Quick Book Acquisition</h3>
+                                <p class="text-xs font-light text-slate-500">Record purchased ledger items or donated acquisitions</p>
+                            </div>
+                        </div>
+                        <p class="text-xs font-light text-slate-600 leading-relaxed mb-6">
+                            Register new standard book accessions with complete 14-column ledger metadata, or log gifted items into the institutional donor archive.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="openAddBookModal('purchased')" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-normal py-2.5 px-4 rounded-xl shadow-sm text-xs transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cart-plus"></i> Purchased Book
+                        </button>
+                        <button onclick="openAddBookModal('donated')" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-normal py-2.5 px-4 rounded-xl shadow-sm text-xs transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-gift"></i> Donated Book
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-book-open"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-normal text-slate-800">Loan & Patron Management</h3>
+                                <p class="text-xs font-light text-slate-500">Issue books to Students or Staff members</p>
+                            </div>
+                        </div>
+                        <p class="text-xs font-light text-slate-600 leading-relaxed mb-6">
+                            Manage member registrations strictly categorized as Student or Staff, perform instant book lookup by Acc/Book No, and calculate overdue dues.
+                        </p>
+                    </div>
+                    <div>
+                        <button onclick="switchTab(4); setTimeout(() => openAddMemberModal(), 150)" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-normal py-2.5 px-4 rounded-xl shadow-sm text-xs transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i> Add New Member / Issue Loan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECENT LOANS PREVIEW -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-normal text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-500"></i> Active Book Loans Overview
+                    </h3>
+                    <button onclick="switchTab(4)" class="text-xs font-light text-amber-600 hover:underline flex items-center gap-1">
+                        View All Loans <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 font-normal border-b border-slate-200 text-[11px]">
+                                <th class="p-3 font-normal">Acc / Book No</th>
+                                <th class="p-3 font-normal">Book Title</th>
+                                <th class="p-3 font-normal">Issued To</th>
+                                <th class="p-3 font-normal">Category</th>
+                                <th class="p-3 font-normal">Issue Date</th>
+                                <th class="p-3 font-normal">Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashRecentIssuesBody" class="divide-y divide-slate-100 bg-white font-light text-slate-700">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: LIBRARY BOOKS REGISTER (PURCHASED - 14 COLUMNS) -->
+        <section id="page-2" class="page-panel hidden space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5">
+                    <div>
+                        <h2 class="text-lg font-normal text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-book-bookmark text-amber-600"></i> Purchased Books Register (14-Column Ledger)
+                        </h2>
+                        <p class="text-xs font-light text-slate-500">Official institutional acquisition ledger for library collections</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-64">
+                            <input type="text" id="searchBooksInput" oninput="renderBooksRegister()" placeholder="Search title, author, acc no..."
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 pl-9 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none font-light shadow-sm">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        </div>
+                        <button onclick="exportPurchaseLedgerCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-normal px-3 py-2 rounded-xl text-xs shadow-sm flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
+                        <button onclick="openAddBookModal('purchased')" class="bg-slate-900 hover:bg-slate-800 text-white font-normal px-3.5 py-2 rounded-xl text-xs shadow-sm flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-plus"></i> Add Book
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 14 Columns Purchase Register Table -->
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-inner bg-white">
+                    <table class="w-full text-left text-xs border-collapse whitespace-nowrap font-light">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 font-normal border-b border-slate-200 text-[11px]">
+                                <th class="p-3 border-r border-slate-200 font-normal">Sl. No</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Acc / Book No</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Date of Entry</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Call No / Subject</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Author / Editor</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Book Title</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Edition</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Year / Publisher</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Volume</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Pages</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Source / Vendor</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Cost (₹)</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Bill No. & Date</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Remarks</th>
+                                <th class="p-3 text-center font-normal">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksRegisterTableBody" class="divide-y divide-slate-100">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: GIFTED / DONATED BOOKS REGISTER (11 COLUMNS) -->
+        <section id="page-3" class="page-panel hidden space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5">
+                    <div>
+                        <h2 class="text-lg font-normal text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-gift text-indigo-600"></i> Gifted & Donated Books Register (11-Column Ledger)
+                        </h2>
+                        <p class="text-xs font-light text-slate-500">Official registry for donated literature and special fine arts collections</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-64">
+                            <input type="text" id="searchDonatedInput" oninput="renderDonatedRegister()" placeholder="Search donor, title, acc no..."
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 pl-9 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none font-light shadow-sm">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        </div>
+                        <button onclick="exportDonationLedgerCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-normal px-3 py-2 rounded-xl text-xs shadow-sm flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
+                        <button onclick="openAddBookModal('donated')" class="bg-slate-900 hover:bg-slate-800 text-white font-normal px-3.5 py-2 rounded-xl text-xs shadow-sm flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-plus"></i> Add Donated Book
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 11 Columns Donated Register Table -->
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-inner bg-white">
+                    <table class="w-full text-left text-xs border-collapse whitespace-nowrap font-light">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 font-normal border-b border-slate-200 text-[11px]">
+                                <th class="p-3 border-r border-slate-200 font-normal">Sl. No</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Acc / Book No</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Date of Entry</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Call No / Subject</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Author / Editor</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Book Title</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Edition</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Donated By (Donor Details)</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Estimated Value (₹)</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Condition</th>
+                                <th class="p-3 border-r border-slate-200 font-normal">Remarks</th>
+                                <th class="p-3 text-center font-normal">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donatedRegisterTableBody" class="divide-y divide-slate-100">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: ISSUED BOOKS & MEMBERS DIRECTORY -->
+        <section id="page-4" class="page-panel hidden space-y-5">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5">
+                    <div>
+                        <h2 class="text-lg font-normal text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-users text-emerald-600"></i> Issued Books & Member Directory
+                        </h2>
+                        <p class="text-xs font-light text-slate-500">Student and Staff patron profiles, loan monitoring, and return processing</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-52">
+                            <input type="text" id="searchMembersInput" oninput="renderMembersList()" placeholder="Search name or ID..."
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 pl-8 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none font-light shadow-sm">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-[11px]"></i>
+                        </div>
+                        <button onclick="exportMembersCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-normal px-3 py-1.5 rounded-xl text-xs shadow-sm flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-file-csv"></i> Members
+                        </button>
+                        <button onclick="exportIssuedBooksCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-normal px-3 py-1.5 rounded-xl text-xs shadow-sm flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-file-excel"></i> Active Loans
+                        </button>
+                        <button onclick="openAddMemberModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-normal px-3.5 py-1.5 rounded-xl text-xs shadow-sm flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-user-plus"></i> Add Member
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MEMBERS CARDS CONTAINER -->
+                <div id="membersContainer" class="space-y-4">
+                    <!-- JS Populated Cards -->
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL 1: ADD / EDIT BOOK MODAL -->
+    <div id="bookModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full border border-slate-200 p-6 my-8 text-slate-800 relative">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 id="bookModalTitle" class="text-base font-normal flex items-center gap-2 text-slate-800">
+                    <i class="fa-solid fa-book"></i> Add Book Record
+                </h3>
+                <button onclick="closeBookModal()" class="text-slate-400 hover:text-slate-800 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="bookForm" onsubmit="saveBookEntry(event)" class="space-y-4 text-xs font-light">
+                <input type="hidden" id="bookModalType" value="purchased">
+                <input type="hidden" id="bookModalEditIndex" value="-1">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                        <label class="block text-slate-600 mb-1">Acc / Book No. *</label>
+                        <input type="text" id="bmBookNo" required placeholder="e.g. BK-2026-001" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-1">Date of Entry *</label>
+                        <input type="date" id="bmEntryDate" required class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-1">Call No / Subject *</label>
+                        <input type="text" id="bmCallNo" required placeholder="e.g. 759.954 VAR" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label class="block text-slate-600 mb-1">Book Title *</label>
+                        <input type="text" id="bmTitle" required placeholder="Full book title" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-1">Author / Editor *</label>
+                        <input type="text" id="bmAuthor" required placeholder="Author or editor names" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                        <label class="block text-slate-600 mb-1">Edition</label>
+                        <input type="text" id="bmEdition" placeholder="e.g. 1st / Revised" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div id="fieldPubYear">
+                        <label class="block text-slate-600 mb-1">Year / Publisher</label>
+                        <input type="text" id="bmYearPub" placeholder="e.g. 2022 / Oxford Press" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div id="fieldPages">
+                        <label class="block text-slate-600 mb-1">Volume & Pages</label>
+                        <input type="text" id="bmPages" placeholder="e.g. Vol 1, 320pp" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- PURCHASED SPECIFIC FIELDS -->
+                <div id="purchasedFields" class="space-y-3.5 pt-2 border-t border-slate-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                        <div>
+                            <label class="block text-slate-600 mb-1">Source / Vendor</label>
+                            <input type="text" id="bmSource" placeholder="Vendor store name" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 mb-1">Cost (₹)</label>
+                            <input type="number" step="0.01" id="bmCost" placeholder="0.00" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 mb-1">Bill No. & Date</label>
+                            <input type="text" id="bmBillNo" placeholder="e.g. INV-904 dt. 10/01/2026" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DONATED SPECIFIC FIELDS -->
+                <div id="donatedFields" class="hidden space-y-3.5 pt-2 border-t border-slate-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                        <div class="sm:col-span-2">
+                            <label class="block text-slate-600 mb-1">Donated By (Donor Details) *</label>
+                            <input type="text" id="bmDonor" placeholder="Full name & organization of donor" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 mb-1">Estimated Value (₹)</label>
+                            <input type="number" step="0.01" id="bmDonatedValue" placeholder="0.00" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-1">Condition</label>
+                        <select id="bmCondition" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Fair / Archive">Fair / Archive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">Remarks</label>
+                    <input type="text" id="bmRemarks" placeholder="Optional notes" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeBookModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-normal transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-normal transition shadow-sm">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD MEMBER MODAL -->
+    <div id="memberModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 p-6 text-slate-800 relative">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-base font-normal flex items-center gap-2 text-slate-800"><i class="fa-solid fa-user-plus text-emerald-600"></i> Add Member Profile</h3>
+                <button onclick="closeMemberModal()" class="text-slate-400 hover:text-slate-800 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="memberForm" onsubmit="saveMemberEntry(event)" class="space-y-4 text-xs font-light">
+                <div>
+                    <label class="block text-slate-600 mb-1">Member Category *</label>
+                    <select id="mmType" required class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none font-normal">
+                        <option value="Student">Student</option>
+                        <option value="Staff">Staff</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">Full Name *</label>
+                    <input type="text" id="mmName" required placeholder="e.g. Sreehari Varma" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">Member Roll / Employee ID *</label>
+                    <input type="text" id="mmId" required placeholder="e.g. STU-2026-088 or STF-102" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none font-normal">
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">Contact Phone Number</label>
+                    <input type="text" id="mmPhone" placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeMemberModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-normal transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-normal transition shadow-sm">Save Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ISSUE BOOK MODAL -->
+    <div id="issueBookModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 p-6 text-slate-800 relative">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-base font-normal flex items-center gap-2 text-slate-800"><i class="fa-solid fa-book-open text-amber-600"></i> Issue Book to Patron</h3>
+                <button onclick="closeIssueBookModal()" class="text-slate-400 hover:text-slate-800 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="issueForm" onsubmit="handleIssueBook(event)" class="space-y-3.5 text-xs font-light">
+                <div>
+                    <label class="block text-slate-600 mb-1">Select Patron Member *</label>
+                    <select id="imMemberSelect" onchange="onMemberSelectChange()" required class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none font-normal">
+                        <!-- JS Populated -->
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-600 mb-1">Member Category</label>
+                        <input type="text" id="imMemberType" readonly placeholder="Category" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-100 font-normal">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-1">Acc / Book No. * (Lookup)</label>
+                        <div class="relative">
+                            <input type="text" id="imBookNo" onkeyup="lookupBookDetails()" required placeholder="e.g. BK-2026-001" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none font-normal uppercase">
+                            <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-slate-400 text-[11px]"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">Book Title</label>
+                    <input type="text" id="imTitle" readonly placeholder="Auto-filled title" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-100 font-normal">
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">Author / Editor</label>
+                    <input type="text" id="imAuthor" readonly placeholder="Auto-filled author" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-100">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-600 mb-1">Issue Date *</label>
+                        <input type="date" id="imIssueDate" required class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-1">Due Date *</label>
+                        <input type="date" id="imDueDate" required class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeIssueBookModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-normal transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-normal transition shadow-sm">Confirm Issue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: CHANGE PASSWORD MODAL -->
+    <div id="changePasswordModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 p-6 text-slate-800 relative">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-base font-normal flex items-center gap-2 text-slate-800"><i class="fa-solid fa-key"></i> Update Admin Password</h3>
+                <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-800 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="changePasswordForm" onsubmit="savePasswordChange(event)" class="space-y-4 text-xs font-light">
+                <div>
+                    <label class="block text-slate-600 mb-1">Current Password *</label>
+                    <input type="password" id="pwCurrent" required placeholder="Current password" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">New Password *</label>
+                    <input type="password" id="pwNew" required placeholder="New password" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 mb-1">Confirm New Password *</label>
+                    <input type="password" id="pwConfirm" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div id="pwErrorMsg" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-200"></div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-normal transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-normal transition shadow-sm">Save Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: MANAGE ADMINS MODAL -->
+    <div id="manageAdminsModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 p-6 text-slate-800 relative">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-base font-normal flex items-center gap-2 text-slate-800"><i class="fa-solid fa-users-gear"></i> Manage Administrator Accounts</h3>
+                <button onclick="closeManageAdminsModal()" class="text-slate-400 hover:text-slate-800 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="mb-5 space-y-2">
+                <h4 class="text-xs font-normal text-slate-500 uppercase tracking-wider">Registered Administrators</h4>
+                <div id="adminAccountsList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <!-- JS Populated -->
+                </div>
+            </div>
+
+            <form id="addAdminForm" onsubmit="addNewSubAdmin(event)" class="space-y-3.5 text-xs border-t border-slate-100 pt-4 font-light">
+                <h4 class="text-xs font-normal text-slate-500 uppercase tracking-wider">Add Secondary Administrator</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-600 mb-1">Username *</label>
+                        <input type="text" id="newAdminUser" required placeholder="e.g. AssistantLib" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 mb-1">Initial Password *</label>
+                        <input type="password" id="newAdminPass" required placeholder="Initial password" class="w-full border border-slate-300 rounded-xl p-2.5 bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-normal py-2.5 px-4 rounded-xl shadow-sm transition">
+                    <i class="fa-solid fa-user-plus text-xs"></i> Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- APPLICATION SCRIPT LOGIC -->
+    <script>
+        // LOCAL STORAGE KEYS
+        const STORAGE_KEY_BOOKS = 'rrv_library_books_v5';
+        const STORAGE_KEY_GIFTS = 'rrv_library_gifts_v5';
+        const STORAGE_KEY_MEMBERS = 'rrv_library_members_v5';
+        const STORAGE_KEY_ADMINS = 'rrv_library_admins_v5';
+
+        // DEFAULT INITIAL DATA
+        const defaultAdmins = [
+            { id: '1', username: 'Main Admin', role: 'Main Admin', password: 'admin123' },
+            { id: '2', username: 'Assistant Librarian', role: 'Sub Admin', password: 'admin123' }
+        ];
+
+        const defaultBooks = [
+            {
+                bookNo: 'BK-2026-001',
+                entryDate: '2026-01-10',
+                callNo: '759.954 VAR',
+                author: 'E.M.J. Venniyoor',
+                title: 'Raja Ravi Varma: Masterpieces and Legacy',
+                edition: '2nd Edition',
+                yearPub: '2018 / Lalithakala Akademi',
+                volume: 'Vol 1',
+                pages: '240pp',
+                source: 'National Book Stall',
+                cost: '1850.00',
+                billNo: 'INV-102 dt. 08/01/2026',
+                remarks: 'Fine Art Collection'
+            },
+            {
+                bookNo: 'BK-2026-002',
+                entryDate: '2026-01-15',
+                callNo: '743.4 PER',
+                author: 'Victor Perard',
+                title: 'Anatomy and Drawing',
+                edition: 'Revised Edition',
+                yearPub: '2004 / Dover Publications',
+                volume: 'Single',
+                pages: '192pp',
+                source: 'Higginbothams',
+                cost: '720.00',
+                billNo: 'INV-109 dt. 12/01/2026',
+                remarks: 'Reference Book'
+            }
+        ];
+
+        const defaultGifts = [
+            {
+                bookNo: 'GFT-2026-001',
+                entryDate: '2026-01-05',
+                callNo: '730.954 SIV',
+                author: 'C. Sivaramamurti',
+                title: 'Indian Sculpture and Bronzes Collection',
+                edition: 'Collector Edition',
+                donor: 'Prof. K. A. Varma (Ex-Principal)',
+                value: '3500.00',
+                condition: 'Excellent',
+                remarks: 'Special Archive Collection'
+            }
+        ];
+
+        const defaultMembers = [
+            {
+                id: 'STU-2026-001',
+                name: 'Ananthan Pillai',
+                type: 'Student',
+                phone: '9847012345',
+                issuedBooks: [
+                    {
+                        bookNo: 'BK-2026-002',
+                        title: 'Anatomy and Drawing',
+                        author: 'Victor Perard',
+                        issueDate: '2026-02-10',
+                        dueDate: '2026-02-24'
+                    }
+                ]
+            },
+            {
+                id: 'STF-2026-101',
+                name: 'Dr. Radhika Menon',
+                type: 'Staff',
+                phone: '9447123890',
+                issuedBooks: []
+            }
+        ];
+
+        // STATE VARIABLES
+        let activeAdmin = null;
+        let booksData = [];
+        let giftedData = [];
+        let membersData = [];
+        let adminsData = [];
+
+        // INITIALIZATION
+        window.onload = function() {
+            loadStoredData();
+            populateAdminDropdown();
+        };
+
+        function loadStoredData() {
+            adminsData = JSON.parse(localStorage.getItem(STORAGE_KEY_ADMINS)) || defaultAdmins;
+            booksData = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKS)) || defaultBooks;
+            giftedData = JSON.parse(localStorage.getItem(STORAGE_KEY_GIFTS)) || defaultGifts;
+            membersData = JSON.parse(localStorage.getItem(STORAGE_KEY_MEMBERS)) || defaultMembers;
+
+            // Enforce Student/Staff typing across legacy records
+            membersData.forEach(m => {
+                if (m.type !== 'Student' && m.type !== 'Staff') m.type = 'Student';
+            });
+
+            saveToStorage();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY_ADMINS, JSON.stringify(adminsData));
+            localStorage.setItem(STORAGE_KEY_BOOKS, JSON.stringify(booksData));
+            localStorage.setItem(STORAGE_KEY_GIFTS, JSON.stringify(giftedData));
+            localStorage.setItem(STORAGE_KEY_MEMBERS, JSON.stringify(membersData));
+        }
+
+        // AUTHENTICATION
+        function populateAdminDropdown() {
+            const select = document.getElementById('loginAdminSelect');
+            select.innerHTML = '';
+            adminsData.forEach(admin => {
+                const opt = document.createElement('option');
+                opt.value = admin.id;
+                opt.textContent = `${admin.username} (${admin.role})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const selectedId = document.getElementById('loginAdminSelect').value;
+            const passwordInput = document.getElementById('loginPassword').value;
+            const errorMsg = document.getElementById('loginErrorMsg');
+
+            const foundAdmin = adminsData.find(a => a.id === selectedId);
+
+            if (foundAdmin && foundAdmin.password === passwordInput) {
+                activeAdmin = foundAdmin;
+                errorMsg.classList.add('hidden');
+                document.getElementById('loginPassword').value = '';
+                
+                document.getElementById('currentUserName').innerText = `${activeAdmin.username} (${activeAdmin.role})`;
+
+                if (activeAdmin.role === 'Main Admin') {
+                    document.getElementById('btnManageAdmins').classList.remove('hidden');
+                } else {
+                    document.getElementById('btnManageAdmins').classList.add('hidden');
+                }
+
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+
+                renderDashboard();
+                renderBooksRegister();
+                renderDonatedRegister();
+                renderMembersList();
+            } else {
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            activeAdmin = null;
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+            populateAdminDropdown();
+        }
+
+        // TAB SWITCHING
+        function switchTab(tabNum) {
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`tab-btn-${i}`);
+                const page = document.getElementById(`page-${i}`);
+                if (i === tabNum) {
+                    btn.className = "tab-btn flex-1 min-w-[140px] py-2.5 px-3.5 rounded-xl font-normal text-xs transition flex items-center justify-center gap-2 bg-amber-500 text-white shadow-sm";
+                    page.classList.remove('hidden');
+                } else {
+                    btn.className = "tab-btn flex-1 min-w-[140px] py-2.5 px-3.5 rounded-xl font-light text-xs transition flex items-center justify-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800";
+                    page.classList.add('hidden');
+                }
+            }
+
+            if (tabNum === 1) renderDashboard();
+            if (tabNum === 2) renderBooksRegister();
+            if (tabNum === 3) renderDonatedRegister();
+            if (tabNum === 4) renderMembersList();
+        }
+
+        // DASHBOARD RENDER
+        function renderDashboard() {
+            const totalPurchased = booksData.length;
+            const totalDonated = giftedData.length;
+            const totalBooks = totalPurchased + totalDonated;
+
+            let activeLoansCount = 0;
+            const recentIssuesList = [];
+
+            membersData.forEach(member => {
+                if (member.issuedBooks && member.issuedBooks.length > 0) {
+                    activeLoansCount += member.issuedBooks.length;
+                    member.issuedBooks.forEach(b => {
+                        recentIssuesList.push({
+                            ...b,
+                            memberName: member.name,
+                            memberType: member.type
+                        });
+                    });
+                }
+            });
+
+            document.getElementById('dashTotalBooks').innerText = totalBooks;
+            document.getElementById('dashTotalDonated').innerText = totalDonated;
+            document.getElementById('dashActiveLoans').innerText = activeLoansCount;
+            document.getElementById('dashTotalMembers').innerText = membersData.length;
+
+            const tbody = document.getElementById('dashRecentIssuesBody');
+            tbody.innerHTML = '';
+
+            if (recentIssuesList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 font-light">No active book loans recorded.</td></tr>`;
+                return;
+            }
+
+            recentIssuesList.slice(-5).reverse().forEach(issue => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-normal text-slate-900">${escapeHtml(issue.bookNo)}</td>
+                    <td class="p-3 font-normal text-slate-800">${escapeHtml(issue.title)}</td>
+                    <td class="p-3 text-slate-600">${escapeHtml(issue.memberName)}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-normal ${issue.memberType === 'Staff' ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                            ${issue.memberType}
+                        </span>
+                    </td>
+                    <td class="p-3 text-slate-500">${issue.issueDate}</td>
+                    <td class="p-3 text-red-600 font-normal">${issue.dueDate}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // PURCHASED BOOKS REGISTER (14 COLUMNS)
+        function renderBooksRegister() {
+            const tbody = document.getElementById('booksRegisterTableBody');
+            const search = document.getElementById('searchBooksInput').value.toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = booksData.filter(b => 
+                b.title.toLowerCase().includes(search) ||
+                b.author.toLowerCase().includes(search) ||
+                b.bookNo.toLowerCase().includes(search) ||
+                b.callNo.toLowerCase().includes(search)
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="15" class="p-5 text-center text-slate-400 font-light">No purchase register items found.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((b, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 border-r border-slate-100 text-slate-400">${index + 1}</td>
+                    <td class="p-3 border-r border-slate-100 font-normal text-slate-900">${escapeHtml(b.bookNo)}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${b.entryDate}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-700 font-normal">${escapeHtml(b.callNo)}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-700">${escapeHtml(b.author)}</td>
+                    <td class="p-3 border-r border-slate-100 font-normal text-slate-900">${escapeHtml(b.title)}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(b.edition || '-')}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(b.yearPub || '-')}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(b.volume || '-')}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(b.pages || '-')}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(b.source || '-')}</td>
+                    <td class="p-3 border-r border-slate-100 font-normal text-emerald-700">₹${parseFloat(b.cost || 0).toFixed(2)}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(b.billNo || '-')}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(b.remarks || '-')}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="editBookEntry('purchased', '${b.bookNo}')" class="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs transition" title="Edit Entry">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteBookEntry('purchased', '${b.bookNo}')" class="p-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-xs transition" title="Delete Entry">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // DONATED BOOKS REGISTER (11 COLUMNS)
+        function renderDonatedRegister() {
+            const tbody = document.getElementById('donatedRegisterTableBody');
+            const search = document.getElementById('searchDonatedInput').value.toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = giftedData.filter(g => 
+                g.title.toLowerCase().includes(search) ||
+                g.author.toLowerCase().includes(search) ||
+                g.donor.toLowerCase().includes(search) ||
+                g.bookNo.toLowerCase().includes(search)
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" class="p-5 text-center text-slate-400 font-light">No donated book entries found.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((g, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 border-r border-slate-100 text-slate-400">${index + 1}</td>
+                    <td class="p-3 border-r border-slate-100 font-normal text-slate-900">${escapeHtml(g.bookNo)}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${g.entryDate}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-700 font-normal">${escapeHtml(g.callNo)}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-700">${escapeHtml(g.author)}</td>
+                    <td class="p-3 border-r border-slate-100 font-normal text-slate-900">${escapeHtml(g.title)}</td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(g.edition || '-')}</td>
+                    <td class="p-3 border-r border-slate-100 text-amber-800 font-normal">${escapeHtml(g.donor)}</td>
+                    <td class="p-3 border-r border-slate-100 text-emerald-700 font-normal">₹${parseFloat(g.value || 0).toFixed(2)}</td>
+                    <td class="p-3 border-r border-slate-100">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            ${escapeHtml(g.condition || 'Good')}
+                        </span>
+                    </td>
+                    <td class="p-3 border-r border-slate-100 text-slate-500">${escapeHtml(g.remarks || '-')}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="editBookEntry('donated', '${g.bookNo}')" class="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs transition" title="Edit Entry">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteBookEntry('donated', '${g.bookNo}')" class="p-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-xs transition" title="Delete Entry">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // MEMBERS & LOAN DIRECTORY
+        function renderMembersList() {
+            const container = document.getElementById('membersContainer');
+            const search = document.getElementById('searchMembersInput').value.toLowerCase();
+            container.innerHTML = '';
+
+            const filtered = membersData.filter(m => 
+                m.name.toLowerCase().includes(search) ||
+                m.id.toLowerCase().includes(search) ||
+                m.type.toLowerCase().includes(search)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-slate-400 font-light bg-slate-50 rounded-xl border border-slate-200">No registered Student or Staff members found.</div>`;
+                return;
+            }
+
+            const today = new Date();
+
+            filtered.forEach(m => {
+                const activeLoans = m.issuedBooks || [];
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4 font-light";
+
+                let loanRows = '';
+                if (activeLoans.length === 0) {
+                    loanRows = `<div class="text-xs text-slate-400 italic py-2">No active book loans assigned to this member.</div>`;
+                } else {
+                    loanRows = `
+                        <div class="overflow-x-auto border border-slate-200 rounded-xl mt-2">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 border-b border-slate-200 font-normal text-[11px]">
+                                        <th class="p-2.5 font-normal">Acc / Book No</th>
+                                        <th class="p-2.5 font-normal">Book Title</th>
+                                        <th class="p-2.5 font-normal">Issue Date</th>
+                                        <th class="p-2.5 font-normal">Due Date</th>
+                                        <th class="p-2.5 font-normal">Fine (₹)</th>
+                                        <th class="p-2.5 text-center font-normal">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 font-light">
+                                    ${activeLoans.map(b => {
+                                        const dueDateObj = new Date(b.dueDate);
+                                        const diffDays = Math.ceil((today - dueDateObj) / (1000 * 60 * 60 * 24));
+                                        const fine = diffDays > 0 ? diffDays * 2 : 0; // ₹2/day fine
+
+                                        return `
+                                            <tr class="hover:bg-slate-50">
+                                                <td class="p-2.5 font-normal text-slate-900">${escapeHtml(b.bookNo)}</td>
+                                                <td class="p-2.5 text-slate-800">${escapeHtml(b.title)}</td>
+                                                <td class="p-2.5 text-slate-500">${b.issueDate}</td>
+                                                <td class="p-2.5 text-red-600 font-normal">${b.dueDate}</td>
+                                                <td class="p-2.5 font-normal ${fine > 0 ? 'text-red-600' : 'text-slate-500'}">₹${fine}.00</td>
+                                                <td class="p-2.5 text-center">
+                                                    <button onclick="returnBook('${m.id}', '${b.bookNo}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-normal text-xs transition shadow-sm">
+                                                        <i class="fa-solid fa-rotate-left"></i> Return Book
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-10 h-10 rounded-xl ${m.type === 'Staff' ? 'bg-purple-600' : 'bg-slate-900'} text-white flex items-center justify-center text-sm shadow-sm">
+                                ${m.type === 'Staff' ? '<i class="fa-solid fa-user-tie"></i>' : '<i class="fa-solid fa-graduation-cap"></i>'}
+                            </div>
+                            <div>
+                                <h3 class="font-normal text-slate-800 text-base leading-tight">${escapeHtml(m.name)}</h3>
+                                <div class="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                                    <span>ID: <strong class="font-normal text-slate-700">${escapeHtml(m.id)}</strong></span>
+                                    <span>•</span>
+                                    <span>Phone: ${escapeHtml(m.phone || 'N/A')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-normal ${m.type === 'Staff' ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                                ${m.type}
+                            </span>
+                            <button onclick="openIssueBookModal('${m.id}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-normal rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Issue Book
+                            </button>
+                            <button onclick="deleteMember('${m.id}')" class="p-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-xs transition" title="Delete Profile">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-normal text-slate-500 uppercase tracking-wider">Active Book Loans (${activeLoans.length})</h4>
+                        ${loanRows}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /* ==========================================================================
+           EXPORT CSV & BACKUP UTILS
+           ========================================================================== */
+        function downloadCSV(filename, csvContent) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function escapeCSVField(field) {
+            if (field === null || field === undefined) return '""';
+            const stringValue = String(field).replace(/"/g, '""');
+            return `"${stringValue}"`;
+        }
+
+        function exportPurchaseLedgerCSV() {
+            if (!booksData || booksData.length === 0) {
+                alert("No purchase ledger entries to export!");
+                return;
+            }
+            const headers = [
+                "Sl. No", "Acc/Book No", "Date of Entry", "Call No/Subject", "Author/Editor", 
+                "Book Title", "Edition", "Year/Publisher", "Volume", "Pages", "Source/Vendor", "Cost (INR)", "Bill No & Date", "Remarks"
+            ];
+            const rows = booksData.map((b, idx) => [
+                idx + 1, b.bookNo, b.entryDate, b.callNo, b.author, b.title,
+                b.edition || '', b.yearPub || '', b.volume || '', b.pages || '',
+                b.source || '', b.cost || '0.00', b.billNo || '', b.remarks || ''
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Purchase_Ledger_Backup_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportDonationLedgerCSV() {
+            if (!giftedData || giftedData.length === 0) {
+                alert("No donation ledger entries to export!");
+                return;
+            }
+            const headers = [
+                "Sl. No", "Acc/Book No", "Date of Entry", "Call No/Subject", "Author/Editor", 
+                "Book Title", "Edition", "Donated By (Donor)", "Estimated Value (INR)", "Condition", "Remarks"
+            ];
+            const rows = giftedData.map((g, idx) => [
+                idx + 1, g.bookNo, g.entryDate, g.callNo, g.author, g.title,
+                g.edition || '', g.donor || '', g.value || '0.00', g.condition || '', g.remarks || ''
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Donation_Ledger_Backup_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportMembersCSV() {
+            if (!membersData || membersData.length === 0) {
+                alert("No members registered to export!");
+                return;
+            }
+            const headers = ["Member ID", "Full Name", "Category (Student/Staff)", "Contact Phone", "Active Loans Count"];
+            const rows = membersData.map(m => [
+                m.id, m.name, m.type, m.phone || '', (m.issuedBooks || []).length
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Members_Directory_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportIssuedBooksCSV() {
+            const activeLoans = [];
+            membersData.forEach(m => {
+                (m.issuedBooks || []).forEach(b => {
+                    activeLoans.push({
+                        memberId: m.id,
+                        memberName: m.name,
+                        memberType: m.type,
+                        bookNo: b.bookNo,
+                        title: b.title,
+                        author: b.author,
+                        issueDate: b.issueDate,
+                        dueDate: b.dueDate
+                    });
+                });
+            });
+
+            if (activeLoans.length === 0) {
+                alert("No active loans to export!");
+                return;
+            }
+
+            const headers = ["Member ID", "Member Name", "Member Category", "Acc/Book No", "Book Title", "Author", "Issue Date", "Due Date"];
+            const rows = activeLoans.map(l => [
+                l.memberId, l.memberName, l.memberType, l.bookNo, l.title, l.author, l.issueDate, l.dueDate
+            ].map(escapeCSVField).join(','));
+
+            const csvString = [headers.map(escapeCSVField).join(','), ...rows].join('\n');
+            downloadCSV(`Active_Book_Loans_${new Date().toISOString().slice(0, 10)}.csv`, csvString);
+        }
+
+        function exportFullSystemBackupCSV() {
+            exportPurchaseLedgerCSV();
+            setTimeout(exportDonationLedgerCSV, 300);
+            setTimeout(exportMembersCSV, 600);
+            setTimeout(exportIssuedBooksCSV, 900);
+        }
+
+        /* ==========================================================================
+           MODALS & ACTIONS
+           ========================================================================== */
+        function openAddBookModal(type) {
+            document.getElementById('bookModalType').value = type;
+            document.getElementById('bookModalEditIndex').value = "-1";
+            document.getElementById('bookForm').reset();
+            document.getElementById('bmEntryDate').value = new Date().toISOString().slice(0, 10);
+
+            if (type === 'purchased') {
+                document.getElementById('bookModalTitle').innerHTML = '<i class="fa-solid fa-cart-plus text-amber-600"></i> Add Purchased Book Entry';
+                document.getElementById('purchasedFields').classList.remove('hidden');
+                document.getElementById('donatedFields').classList.add('hidden');
+                document.getElementById('bmDonor').removeAttribute('required');
+            } else {
+                document.getElementById('bookModalTitle').innerHTML = '<i class="fa-solid fa-gift text-indigo-600"></i> Add Donated Book Entry';
+                document.getElementById('purchasedFields').classList.add('hidden');
+                document.getElementById('donatedFields').classList.remove('hidden');
+                document.getElementById('bmDonor').setAttribute('required', 'true');
+            }
+
+            document.getElementById('bookModal').classList.remove('hidden');
+        }
+
+        function closeBookModal() {
+            document.getElementById('bookModal').classList.add('hidden');
+        }
+
+        function editBookEntry(type, bookNo) {
+            let list = type === 'purchased' ? booksData : giftedData;
+            const index = list.findIndex(b => b.bookNo === bookNo);
+            if (index === -1) return;
+
+            const b = list[index];
+            openAddBookModal(type);
+            document.getElementById('bookModalEditIndex').value = index;
+
+            document.getElementById('bmBookNo').value = b.bookNo;
+            document.getElementById('bmEntryDate').value = b.entryDate;
+            document.getElementById('bmCallNo').value = b.callNo || '';
+            document.getElementById('bmTitle').value = b.title;
+            document.getElementById('bmAuthor').value = b.author;
+            document.getElementById('bmEdition').value = b.edition || '';
+            document.getElementById('bmRemarks').value = b.remarks || '';
+
+            if (type === 'purchased') {
+                document.getElementById('bmYearPub').value = b.yearPub || '';
+                document.getElementById('bmPages').value = (b.volume ? b.volume + ', ' : '') + (b.pages || '');
+                document.getElementById('bmSource').value = b.source || '';
+                document.getElementById('bmCost').value = b.cost || '';
+                document.getElementById('bmBillNo').value = b.billNo || '';
+            } else {
+                document.getElementById('bmDonor').value = b.donor || '';
+                document.getElementById('bmDonatedValue').value = b.value || '';
+                document.getElementById('bmCondition').value = b.condition || 'Good';
+            }
+        }
+
+        function saveBookEntry(event) {
+            event.preventDefault();
+            const type = document.getElementById('bookModalType').value;
+            const editIndex = parseInt(document.getElementById('bookModalEditIndex').value);
+
+            const bookObj = {
+                bookNo: document.getElementById('bmBookNo').value.trim(),
+                entryDate: document.getElementById('bmEntryDate').value,
+                callNo: document.getElementById('bmCallNo').value.trim(),
+                title: document.getElementById('bmTitle').value.trim(),
+                author: document.getElementById('bmAuthor').value.trim(),
+                edition: document.getElementById('bmEdition').value.trim(),
+                remarks: document.getElementById('bmRemarks').value.trim()
+            };
+
+            if (type === 'purchased') {
+                bookObj.yearPub = document.getElementById('bmYearPub').value.trim();
+                bookObj.volume = 'Vol 1';
+                bookObj.pages = document.getElementById('bmPages').value.trim();
+                bookObj.source = document.getElementById('bmSource').value.trim();
+                bookObj.cost = document.getElementById('bmCost').value || '0.00';
+                bookObj.billNo = document.getElementById('bmBillNo').value.trim();
+
+                if (editIndex >= 0) booksData[editIndex] = bookObj;
+                else booksData.push(bookObj);
+            } else {
+                bookObj.donor = document.getElementById('bmDonor').value.trim();
+                bookObj.value = document.getElementById('bmDonatedValue').value || '0.00';
+                bookObj.condition = document.getElementById('bmCondition').value;
+
+                if (editIndex >= 0) giftedData[editIndex] = bookObj;
+                else giftedData.push(bookObj);
+            }
+
+            saveToStorage();
+            closeBookModal();
+            if (type === 'purchased') renderBooksRegister();
+            else renderDonatedRegister();
+            renderDashboard();
+        }
+
+        function deleteBookEntry(type, bookNo) {
+            if (!confirm(`Are you sure you want to delete book entry "${bookNo}"?`)) return;
+
+            if (type === 'purchased') {
+                booksData = booksData.filter(b => b.bookNo !== bookNo);
+            } else {
+                giftedData = giftedData.filter(g => g.bookNo !== bookNo);
+            }
+
+            saveToStorage();
+            if (type === 'purchased') renderBooksRegister();
+            else renderDonatedRegister();
+            renderDashboard();
+        }
+
+        function openAddMemberModal() {
+            document.getElementById('memberForm').reset();
+            document.getElementById('memberModal').classList.remove('hidden');
+        }
+
+        function closeMemberModal() {
+            document.getElementById('memberModal').classList.add('hidden');
+        }
+
+        function saveMemberEntry(event) {
+            event.preventDefault();
+            const memberObj = {
+                id: document.getElementById('mmId').value.trim(),
+                name: document.getElementById('mmName').value.trim(),
+                type: document.getElementById('mmType').value,
+                phone: document.getElementById('mmPhone').value.trim(),
+                issuedBooks: []
+            };
+
+            const existingIndex = membersData.findIndex(m => m.id === memberObj.id);
+            if (existingIndex >= 0) {
+                alert("A member with this ID already exists!");
+                return;
+            }
+
+            membersData.push(memberObj);
+            saveToStorage();
+            closeMemberModal();
+            renderMembersList();
+            renderDashboard();
+        }
+
+        function deleteMember(memberId) {
+            if (!confirm(`Are you sure you want to delete member profile "${memberId}"?`)) return;
+            membersData = membersData.filter(m => m.id !== memberId);
+            saveToStorage();
+            renderMembersList();
+            renderDashboard();
+        }
+
+        function openIssueBookModal(preselectedMemberId) {
+            document.getElementById('issueForm').reset();
+            const memberSelect = document.getElementById('imMemberSelect');
+            memberSelect.innerHTML = '<option value="">-- Select Member --</option>';
+
+            membersData.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = `${m.name} (${m.id}) - ${m.type}`;
+                if (preselectedMemberId && m.id === preselectedMemberId) {
+                    opt.selected = true;
+                }
+                memberSelect.appendChild(opt);
+            });
+
+            if (preselectedMemberId) {
+                onMemberSelectChange();
+            }
+
+            const today = new Date();
+            const dueDate = new Date();
+            dueDate.setDate(today.getDate() + 14);
+
+            document.getElementById('imIssueDate').value = today.toISOString().slice(0, 10);
+            document.getElementById('imDueDate').value = dueDate.toISOString().slice(0, 10);
+
+            document.getElementById('issueBookModal').classList.remove('hidden');
+        }
+
+        function onMemberSelectChange() {
+            const memberId = document.getElementById('imMemberSelect').value;
+            const member = membersData.find(m => m.id === memberId);
+            if (member) {
+                document.getElementById('imMemberType').value = member.type || 'Student';
+            }
+        }
+
+        function closeIssueBookModal() {
+            document.getElementById('issueBookModal').classList.add('hidden');
+        }
+
+        function lookupBookDetails() {
+            const bookNo = document.getElementById('imBookNo').value.trim();
+            const titleInput = document.getElementById('imTitle');
+            const authorInput = document.getElementById('imAuthor');
+
+            let found = booksData.find(b => b.bookNo.toLowerCase() === bookNo.toLowerCase());
+            if (!found) {
+                found = giftedData.find(g => g.bookNo.toLowerCase() === bookNo.toLowerCase());
+            }
+
+            if (found) {
+                titleInput.value = found.title;
+                authorInput.value = found.author;
+            } else {
+                titleInput.value = '';
+                authorInput.value = '';
+            }
+        }
+
+        function handleIssueBook(event) {
+            event.preventDefault();
+            const memberId = document.getElementById('imMemberSelect').value;
+            const bookNo = document.getElementById('imBookNo').value.trim();
+            const title = document.getElementById('imTitle').value;
+            const author = document.getElementById('imAuthor').value;
+            const issueDate = document.getElementById('imIssueDate').value;
+            const dueDate = document.getElementById('imDueDate').value;
+
+            if (!memberId) {
+                alert("Please select a registered member.");
+                return;
+            }
+
+            if (!title) {
+                alert("Please enter a valid, registered Acc/Book Number.");
+                return;
+            }
+
+            const member = membersData.find(m => m.id === memberId);
+            if (!member) return;
+
+            if (!member.issuedBooks) member.issuedBooks = [];
+            member.issuedBooks.push({ bookNo, title, author, issueDate, dueDate });
+
+            saveToStorage();
+            closeIssueBookModal();
+            renderMembersList();
+            renderDashboard();
+        }
+
+        function returnBook(memberId, bookNo) {
+            const member = membersData.find(m => m.id === memberId);
+            if (!member) return;
+
+            member.issuedBooks = (member.issuedBooks || []).filter(b => b.bookNo !== bookNo);
+            saveToStorage();
+            renderMembersList();
+            renderDashboard();
+        }
+
+        /* ==========================================================================
+           ADMIN & PASSWORD MODALS
+           ========================================================================== */
+        function openChangePasswordModal() {
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('pwErrorMsg').classList.add('hidden');
+            document.getElementById('changePasswordModal').classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.add('hidden');
+        }
+
+        function savePasswordChange(event) {
+            event.preventDefault();
+            const currentPw = document.getElementById('pwCurrent').value;
+            const newPw = document.getElementById('pwNew').value;
+            const confirmPw = document.getElementById('pwConfirm').value;
+            const errorMsg = document.getElementById('pwErrorMsg');
+
+            if (currentPw !== activeAdmin.password) {
+                errorMsg.innerText = "Current password does not match!";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            if (newPw !== confirmPw) {
+                errorMsg.innerText = "New passwords do not match!";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            const adminObj = adminsData.find(a => a.id === activeAdmin.id);
+            if (adminObj) {
+                adminObj.password = newPw;
+                activeAdmin.password = newPw;
+                saveToStorage();
+                alert("Password updated successfully!");
+                closeChangePasswordModal();
+            }
+        }
+
+        function openManageAdminsModal() {
+            renderAdminsList();
+            document.getElementById('manageAdminsModal').classList.remove('hidden');
+        }
+
+        function closeManageAdminsModal() {
+            document.getElementById('manageAdminsModal').classList.add('hidden');
+        }
+
+        function renderAdminsList() {
+            const listContainer = document.getElementById('adminAccountsList');
+            listContainer.innerHTML = '';
+
+            adminsData.forEach(a => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-light";
+                div.innerHTML = `
+                    <div>
+                        <strong class="font-normal text-slate-800">${escapeHtml(a.username)}</strong>
+                        <span class="ml-2 text-[10px] px-2 py-0.5 rounded-md ${a.role === 'Main Admin' ? 'bg-amber-100 text-amber-800 border border-amber-200 font-normal' : 'bg-slate-200 text-slate-600'}">${a.role}</span>
+                    </div>
+                    ${a.role !== 'Main Admin' ? `
+                        <button onclick="removeSubAdmin('${a.id}')" class="text-red-600 hover:text-red-800 text-xs">
+                            <i class="fa-solid fa-trash"></i> Remove
+                        </button>
+                    ` : '<span class="text-[10px] text-slate-400">Primary</span>'}
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function addNewSubAdmin(event) {
+            event.preventDefault();
+            const username = document.getElementById('newAdminUser').value.trim();
+            const password = document.getElementById('newAdminPass').value.trim();
+
+            if (!username || !password) return;
+
+            const newAdmin = {
+                id: String(Date.now()),
+                username: username,
+                role: 'Sub Admin',
+                password: password
+            };
+
+            adminsData.push(newAdmin);
+            saveToStorage();
+            document.getElementById('addAdminForm').reset();
+            renderAdminsList();
+            populateAdminDropdown();
+        }
+
+        function removeSubAdmin(adminId) {
+            if (!confirm("Remove this secondary administrator account?")) return;
+            adminsData = adminsData.filter(a => a.id !== adminId);
+            saveToStorage();
+            renderAdminsList();
+            populateAdminDropdown();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
